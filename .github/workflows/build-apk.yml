@@ -19,6 +19,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Stamp build number
+        run: echo "export const APP_BUILD = ${{ github.run_number }};" > src/lib/version.ts
       - name: Install packages
         run: npm install --legacy-peer-deps
       - name: Generate Android project

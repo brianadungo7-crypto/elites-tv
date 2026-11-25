@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import UpdatePrompt from "../../components/UpdatePrompt";
 import { CHANNELS, fmtTime, logoUrl, useChannelState } from "../../lib/api";
 
 function Card({ slug, name, color }: { slug: string; name: string; color: string }) {
@@ -42,6 +43,7 @@ function Card({ slug, name, color }: { slug: string; name: string; color: string
 export default function Home() {
   return (
     <ScrollView style={{ backgroundColor: "#06281c" }} contentContainerStyle={{ padding: 16, paddingTop: 48, gap: 18 }}>
+      <UpdatePrompt />
       <View style={s.brand}>
         <View style={s.mark}>
           <Text style={s.markTxt}>E</Text>
