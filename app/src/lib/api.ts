@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const DEFAULT_BASE = "https://plumbing-detail-juvenile-marathon.trycloudflare.com";
+const DEFAULT_BASE = "https://libs-altered-permitted-well.trycloudflare.com";
 const CONFIG_URL = "https://brianadungo7-crypto.github.io/elites-tv/server.json";
 export let BASE = DEFAULT_BASE;
 let lastCheck = 0;
