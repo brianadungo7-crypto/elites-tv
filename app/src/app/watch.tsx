@@ -2,7 +2,7 @@ import { useRouter as useOfflineRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import OfflineSlate from "../components/OfflineSlate";
 import IntroOverlay, { prefetchIntroLogo } from "../components/IntroOverlay";
-import GraphicsOverlay from "../components/GraphicsOverlay";
+import GraphicsOverlay, { SafeBoundary } from "../components/GraphicsOverlay";
 import useFeedOnline, { useFeedStatus } from "../lib/useFeedOnline";
 import { resolveFault } from "../lib/offline-codes";
 import { useEffect, useRef, useState } from "react";
@@ -406,17 +406,17 @@ export default function Watch() {
           </View></Animated.View>
         )}
 
-        <GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} slug={meta.slug} nowFn={() => Date.now() + clockOff.current} />
+        <SafeBoundary><GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} slug={meta.slug} nowFn={() => Date.now() + clockOff.current} /></SafeBoundary>
         {stinger && (
           <View style={[StyleSheet.absoluteFill, { zIndex: 35, backgroundColor: "#000", opacity: stingerOn ? 1 : 0 }]} pointerEvents="none">
             <VideoView player={stingerPlayer} style={{ position: "absolute", width: 2, height: 2, opacity: 0.01 }} nativeControls={false} />
             {stingerOn ? (
-              <IntroOverlay
+              <SafeBoundary><IntroOverlay
                 sport={/sport/i.test(meta.slug)}
                 logoUri={introLogo}
                 startsAtMs={new Date(stinger.startsAt).getTime()}
                 nowFn={() => Date.now() + clockOff.current}
-              />
+              /></SafeBoundary>
             ) : null}
           </View>
         )}

@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { Component, ReactNode, useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { BASE } from "../lib/api";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+export class SafeBoundary extends Component<{ children?: ReactNode }, { bad: boolean }> {
+  state = { bad: false };
+  static getDerivedStateFromError() { return { bad: true }; }
+  componentDidCatch() {}
+  render() { return this.state.bad ? null : this.props.children; }
+}
 
 // Phone version of the website's graphics overlay (lower third, banner, ticker, now/next, line-up).
 // The server already sends everything in state.graphics, this only draws it.
@@ -142,8 +147,10 @@ export default function GraphicsOverlay({
   next,
   hidden,
   nowFn,
+  slug: slugProp,
   bottomInset = 90,
 }: {
+  slug?: string;
   graphics?: G | null;
   current?: Prog | null;
   next?: Prog | null;
@@ -156,7 +163,8 @@ export default function GraphicsOverlay({
     const id = setInterval(() => setNow(nowFn()), 1000);
     return () => clearInterval(id);
   }, []);
-  const insets = useSafeAreaInsets();
+  const insets = { top: 6, bottom: 6, left: 24, right: 24 };
+  if (!graphics || hidden) return null;
 
   const slug = graphics.slug || slugProp || "";
   const sports = /sport/i.test(slug);
