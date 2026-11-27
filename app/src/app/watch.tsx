@@ -1,6 +1,7 @@
 import { useRouter as useOfflineRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import OfflineSlate from "../components/OfflineSlate";
+import IntroOverlay, { prefetchIntroLogo } from "../components/IntroOverlay";
 import useFeedOnline, { useFeedStatus } from "../lib/useFeedOnline";
 import { resolveFault } from "../lib/offline-codes";
 import { useEffect, useRef, useState } from "react";
@@ -151,6 +152,7 @@ export default function Watch() {
         return;
       }
       setStingerOn(id);
+      try { stingerPlayer.muted = live.current.muted; stingerPlayer.volume = live.current.volume; } catch {}
       try { stingerPlayer.currentTime = Math.max(0, e); } catch {}
       try { stingerPlayer.play(); } catch {}
       timers.push(
@@ -189,9 +191,9 @@ export default function Watch() {
   }, [(state as any)?.adBreak?.id]);
 
   useEffect(() => {
-    player.muted = muted || !feedOnline;
+    player.muted = muted || !feedOnline || stingerOn !== null;
     player.volume = volume * duck.current;
-  }, [player, volume, muted, feedOnline]);
+  }, [player, volume, muted, feedOnline, stingerOn]);
 
   const wasOff = useRef(false);
   useEffect(() => {
@@ -370,7 +372,15 @@ export default function Watch() {
 
         {stinger && (
           <View style={[StyleSheet.absoluteFill, { zIndex: 35, backgroundColor: "#000", opacity: stingerOn ? 1 : 0 }]} pointerEvents="none">
-            <VideoView player={stingerPlayer} style={StyleSheet.absoluteFill} contentFit="contain" nativeControls={false} />
+            <VideoView player={stingerPlayer} style={{ position: "absolute", width: 2, height: 2, opacity: 0.01 }} nativeControls={false} />
+            {stingerOn ? (
+              <IntroOverlay
+                sport={/sport/i.test(meta.slug)}
+                logoUri={introLogo}
+                startsAtMs={new Date(stinger.startsAt).getTime()}
+                nowFn={() => Date.now() + clockOff.current}
+              />
+            ) : null}
           </View>
         )}
 
