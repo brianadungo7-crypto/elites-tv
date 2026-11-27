@@ -21,6 +21,8 @@ jobs:
           java-version: 17
       - name: Stamp build number
         run: echo "export const APP_BUILD = ${{ github.run_number }};" > src/lib/version.ts
+      - name: Stamp version code
+        run: node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('app.json','utf8'));j.expo.android=j.expo.android||{};j.expo.android.versionCode=${{ github.run_number }};fs.writeFileSync('app.json',JSON.stringify(j,null,2))"
       - name: Install packages
         run: npm install --legacy-peer-deps
       - name: Generate Android project
