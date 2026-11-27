@@ -155,9 +155,9 @@ export default function GraphicsOverlay({
     const id = setInterval(() => setNow(nowFn()), 1000);
     return () => clearInterval(id);
   }, []);
-  if (!graphics || hidden) return null;
+  const insets = useSafeAreaInsets();
 
-  const slug = graphics.slug ?? "";
+  const slug = graphics.slug || slugProp || "";
   const sports = /sport/i.test(slug);
   const lt = graphics.lowerThird && graphics.lowerThird.until > now ? graphics.lowerThird : null;
   const bn = !sports && graphics.banner && graphics.banner.until > now ? graphics.banner : null;
@@ -176,9 +176,9 @@ export default function GraphicsOverlay({
   const ltBottom = bottomInset + (bn ? 120 : tk ? 40 : 0);
 
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: 15 }]} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { zIndex: lu ? 26 : 15 }]} pointerEvents="none">
       {lu && (
-        <View key={lu.id} style={g.luShade}>
+        <View key={lu.id} style={[g.luShade, { paddingTop: Math.max(6, insets.top), paddingBottom: Math.max(6, insets.bottom), paddingLeft: Math.max(6, insets.left), paddingRight: Math.max(6, insets.right) }]}>
           <Lineup lu={lu} />
         </View>
       )}

@@ -406,7 +406,7 @@ export default function Watch() {
           </View></Animated.View>
         )}
 
-        <GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} nowFn={() => Date.now() + clockOff.current} />
+        <GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} slug={meta.slug} nowFn={() => Date.now() + clockOff.current} />
         {stinger && (
           <View style={[StyleSheet.absoluteFill, { zIndex: 35, backgroundColor: "#000", opacity: stingerOn ? 1 : 0 }]} pointerEvents="none">
             <VideoView player={stingerPlayer} style={{ position: "absolute", width: 2, height: 2, opacity: 0.01 }} nativeControls={false} />
