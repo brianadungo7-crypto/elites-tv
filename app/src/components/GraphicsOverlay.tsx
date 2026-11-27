@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { BASE } from "../lib/api";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Phone version of the website's graphics overlay (lower third, banner, ticker, now/next, line-up).
 // The server already sends everything in state.graphics, this only draws it.
