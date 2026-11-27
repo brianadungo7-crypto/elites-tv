@@ -59,7 +59,7 @@ export interface ChannelState {
 }
 
 export function logoUrl(slug: string) {
-  return BASE + "/logos/" + slug + ".svg";
+  return BASE + "/logos/" + slug + "-brand.png";
 }
 
 export function fmtTime(iso: string) {

@@ -2,6 +2,7 @@ import { useRouter as useOfflineRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import OfflineSlate from "../components/OfflineSlate";
 import IntroOverlay, { prefetchIntroLogo } from "../components/IntroOverlay";
+import GraphicsOverlay from "../components/GraphicsOverlay";
 import useFeedOnline, { useFeedStatus } from "../lib/useFeedOnline";
 import { resolveFault } from "../lib/offline-codes";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +28,15 @@ const FITS: { id: Fit; label: string }[] = [
   { id: "zoom", label: "Zoom" },
 ];
 const CONTENT_FIT = { fit: "contain", fill: "cover", stretch: "fill", zoom: "cover" } as const;
+const QUALITY_OPTIONS = [
+  { id: "auto", label: "Auto", height: -1 },
+  { id: "240", label: "240p", height: 240 },
+  { id: "360", label: "360p", height: 360 },
+  { id: "480", label: "480p", height: 480 },
+  { id: "720", label: "720p", height: 720 },
+  { id: "1080", label: "1080p", height: 1080 },
+  { id: "1080i50", label: "1080i50", height: 1080 },
+];
 
 export default function Watch() {
   useKeepAwake();
@@ -92,6 +102,30 @@ export default function Watch() {
 
   const qualities = (((state as any)?.qualities ?? []) as { label: string; url: string }[]);
   const [qUrl, setQUrl] = useState<string | null>(null);
+  const [quality, setQuality] = useState("auto");
+  const chooseQuality = (id: string) => {
+    setQuality(id);
+    const opt = QUALITY_OPTIONS.find((o) => o.id === id);
+    if (!opt) return;
+    if (qualities.length > 0) {
+      const want = opt.height === -1 || opt.height > 480 ? qualities[0] : opt.height > 240 ? qualities.find((x) => x.label === "480p") : qualities.find((x) => x.label === "240p");
+      setQUrl((want ?? qualities[0]).url);
+    }
+    try {
+      const tracks = (((player as any).availableVideoTracks ?? []) as any[]);
+      if (opt.height === -1 || tracks.length === 0) {
+        (player as any).videoTrack = null;
+      } else {
+        let best = tracks[0];
+        let diff = Infinity;
+        tracks.forEach((t) => {
+          const d = Math.abs((t?.size?.height ?? 0) - opt.height);
+          if (d < diff) { diff = d; best = t; }
+        });
+        (player as any).videoTrack = best;
+      }
+    } catch {}
+  };
   const source = qualities.find((x) => x.url === qUrl)?.url ?? state?.channel.streamUrl ?? null;
   const player = useVideoPlayer(source, (p) => {
     p.loop = true;
@@ -132,6 +166,8 @@ export default function Watch() {
 
   // channel intro (plays at programme changes and around ad breaks)
   const stinger = (state as any)?.stinger as { id: string; src: string; startsAt: string; durationSec: number } | null | undefined;
+  const introLogo = logoUrl(meta.slug);
+  useEffect(() => { prefetchIntroLogo(introLogo); }, [introLogo]);
   const stingerPlayer = useVideoPlayer(stinger?.src ?? null, (p) => {
     p.loop = false;
     p.muted = true;
@@ -370,6 +406,7 @@ export default function Watch() {
           </View></Animated.View>
         )}
 
+        <GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} nowFn={() => Date.now() + clockOff.current} />
         {stinger && (
           <View style={[StyleSheet.absoluteFill, { zIndex: 35, backgroundColor: "#000", opacity: stingerOn ? 1 : 0 }]} pointerEvents="none">
             <VideoView player={stingerPlayer} style={{ position: "absolute", width: 2, height: 2, opacity: 0.01 }} nativeControls={false} />
@@ -393,7 +430,7 @@ export default function Watch() {
             <Pressable onPress={() => router.back()} style={s.iconBtn} accessibilityLabel="Back">
               <Ionicons name="chevron-back" size={22} color="#fff" />
             </Pressable>
-            <View style={{ flex: 1, marginLeft: 10 }} pointerEvents="none">
+            <View style={{ flex: 1, marginLeft: 10, display: "none" }} pointerEvents="none">
               <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
                 {current && !inBreak && feedOnline && (
                   <View style={s.live}>
@@ -571,13 +608,13 @@ export default function Watch() {
 
           {menu === "quality" && (
             <View style={{ padding: 16, gap: 10 }}>
-              {qualities.length > 0 ? (
+              {true ? (
                 <View style={s.chips}>
-                  {qualities.map((x) => (
+                  {QUALITY_OPTIONS.map((x) => (
                     <Pressable
                       key={x.label}
-                      onPress={() => setQUrl(x.url)}
-                      style={[s.chip, (qUrl ?? qualities[0].url) === x.url && s.chipOn]}
+                      onPress={() => chooseQuality(x.id)}
+                      style={[s.chip, quality === x.id && s.chipOn]}
                     >
                       <Text style={{ color: "#fff", fontWeight: "600" }}>{x.label}</Text>
                     </Pressable>
@@ -606,7 +643,7 @@ const s = StyleSheet.create({
   mini: { position: "absolute", top: 12, left: 12, width: 240, height: 135, borderRadius: 10, borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
   iconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(0,0,0,0.55)", alignItems: "center", justifyContent: "center" },
   logo: { position: "absolute", right: 14, top: 14, width: 150, height: 34, zIndex: 25 },
-  top: { position: "absolute", left: 0, right: 0, top: 0, flexDirection: "row", alignItems: "flex-start", padding: 14, paddingRight: 170, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 20 },
+  top: { position: "absolute", left: 0, right: 0, top: 0, flexDirection: "row", alignItems: "flex-start", padding: 14, paddingRight: 170, zIndex: 20 },
   bottom: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 14, backgroundColor: "rgba(0,0,0,0.55)", zIndex: 20 },
   live: { backgroundColor: "#dc2626", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   liveTxt: { color: "#fff", fontSize: 11, fontWeight: "800" },
