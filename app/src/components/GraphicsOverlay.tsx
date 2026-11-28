@@ -1,5 +1,5 @@
 import { Component, ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { BASE } from "../lib/api";
 export class SafeBoundary extends Component<{ children?: ReactNode }, { bad: boolean }> {
@@ -159,6 +159,8 @@ export default function GraphicsOverlay({
   bottomInset?: number;
 }) {
   const [now, setNow] = useState(nowFn());
+  const win = useWindowDimensions();
+  const [root, setRoot] = useState({ w: 0, h: 0 });
   useEffect(() => {
     const id = setInterval(() => setNow(nowFn()), 1000);
     return () => clearInterval(id);
@@ -185,9 +187,9 @@ export default function GraphicsOverlay({
   const ltBottom = bottomInset + (bn ? 120 : tk ? 40 : 0);
 
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: lu ? 26 : 15 }]} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { zIndex: lu ? 26 : 15 }]} pointerEvents="none" onLayout={(e) => setRoot({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
       {lu && (
-        <View key={lu.id} style={[g.luShade, { paddingTop: Math.max(6, insets.top), paddingBottom: Math.max(6, insets.bottom), paddingLeft: Math.max(6, insets.left), paddingRight: Math.max(6, insets.right) }]}>
+        <View key={lu.id} style={[g.luShade, { position: "absolute", left: 0, top: 0, width: root.w > 200 ? root.w : win.width, height: root.h > 120 ? root.h : win.height, paddingTop: Math.max(6, insets.top), paddingBottom: Math.max(6, insets.bottom), paddingLeft: Math.max(6, insets.left), paddingRight: Math.max(6, insets.right) }]}>
           <Lineup lu={lu} />
         </View>
       )}
