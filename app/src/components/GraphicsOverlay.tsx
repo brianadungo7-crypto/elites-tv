@@ -70,12 +70,15 @@ function Ticker({ id, text, dur, nowMs }: { id: string; text: string; dur: numbe
 
 function PlayerCard({ p, team, color, size }: { p: { num: string; name: string }; team: string; color: string; size: number }) {
   const [bad, setBad] = useState(false);
+  const [badClub, setBadClub] = useState(false);
+  const clubSlug = slugOf(team);
   const slug = slugOf(p.name);
   const h = size * 0.8;
   const w = size * 0.68;
   return (
     <View style={{ alignItems: "center", position: "absolute", width: size * 1.7, marginLeft: -size * 0.85, marginTop: -(h + 14) / 2 }}>
       <View style={{ width: w, height: h, borderRadius: 6, overflow: "hidden", backgroundColor: color }}>
+        {clubSlug && !badClub ? (<Image source={{ uri: BASE + "/api/players/club-" + clubSlug }} style={[StyleSheet.absoluteFill, { opacity: 0.4 }]} contentFit="cover" onError={() => setBadClub(true)} />) : null}
         {slug && !bad ? (
           <Image source={{ uri: BASE + "/api/players/" + slug }} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="top" onError={() => setBad(true)} />
         ) : null}
@@ -187,7 +190,7 @@ export default function GraphicsOverlay({
   const ltBottom = bottomInset + (bn ? 120 : tk ? 40 : 0);
 
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: lu ? 26 : 15 }]} pointerEvents="none" onLayout={(e) => setRoot({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 15 }]} pointerEvents="none" onLayout={(e) => setRoot({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
       {lu && (
         <View key={lu.id} style={[g.luShade, { position: "absolute", left: 0, top: 0, width: root.w > 200 ? root.w : win.width, height: root.h > 120 ? root.h : win.height, paddingTop: Math.max(6, insets.top), paddingBottom: Math.max(6, insets.bottom), paddingLeft: Math.max(6, insets.left), paddingRight: Math.max(6, insets.right) }]}>
           <Lineup lu={lu} />

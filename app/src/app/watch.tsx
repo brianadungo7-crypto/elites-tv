@@ -425,7 +425,7 @@ export default function Watch() {
           </View></Animated.View>
         )}
 
-        <SafeBoundary><GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini} slug={meta.slug} nowFn={() => Date.now() + clockOff.current} /></SafeBoundary>
+        <SafeBoundary><GraphicsOverlay graphics={(state as any)?.graphics} current={current} next={state?.next ?? null} hidden={inBreak || mini || !feedOnline} slug={meta.slug} nowFn={() => Date.now() + clockOff.current} /></SafeBoundary>
         {stinger && (
           <View style={[StyleSheet.absoluteFill, { zIndex: 35, backgroundColor: "#000", opacity: stingerOn ? 1 : 0 }]} pointerEvents="none">
             <VideoView player={stingerPlayer} style={{ position: "absolute", width: 2, height: 2, opacity: 0.01 }} nativeControls={false} />
