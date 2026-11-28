@@ -162,6 +162,24 @@ export default function Watch() {
   const fade = useRef(new Animated.Value(0)).current;
   const adInfo = liveAd ?? (overlayOn ? lastAd.current : null);
   const inBreak = Boolean(liveAd);
+  // video for promo/advert clips during a break
+  const adVideoUrl = adInfo?.ad.videoUrl || null;
+  const adPlayer = useVideoPlayer(adVideoUrl, (p) => {
+    p.loop = false;
+    p.muted = true;
+    p.play();
+  });
+  useEffect(() => {
+    try { adPlayer.muted = muted; adPlayer.volume = volume; } catch {}
+  }, [adPlayer, muted, volume, adVideoUrl]);
+  useEffect(() => {
+    if (!adVideoUrl || !adInfo) return;
+    try {
+      const into = adInfo.ad.durationSec - adInfo.remaining;
+      if (into > 2) adPlayer.currentTime = into;
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adVideoUrl, adInfo?.ad.id]);
   const duck = useRef(1);
 
   // channel intro (plays at programme changes and around ad breaks)
@@ -395,6 +413,7 @@ export default function Watch() {
             {adInfo.ad.imageUrl && (
               <Image source={{ uri: adInfo.ad.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" transition={400} cachePolicy="memory-disk" />
             )}
+            {adVideoUrl ? <VideoView player={adPlayer} style={StyleSheet.absoluteFill} contentFit="cover" nativeControls={false} /> : null}
             <View style={s.adBox}>
               <Text style={s.adSmall}>
                 ADVERT {adInfo.index + 1}/{adInfo.total} - {Math.floor(adInfo.remaining / 60)}:
